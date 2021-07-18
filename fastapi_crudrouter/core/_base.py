@@ -9,11 +9,25 @@ from ._utils import pagination_factory, schema_factory
 NOT_FOUND = HTTPException(404, "Item not found")
 
 
+def override_path_param_id(param_id_prefix: str = "item", param_id_name: str = "id"):
+    if len(param_id_name) == 0:  # check for empty string
+        param_id_name = "id"
+    if len(param_id_prefix) > 0:
+        override_template = "{id_prefix}_{id_name}"
+        return override_template.format(id_prefix=param_id_prefix, id_name=param_id_name)
+    else:
+        override_template = "{id_prefix}"
+        return override_template.format(id_prefix=param_id_prefix)
+
+
 class CRUDGenerator(Generic[T], APIRouter):
     schema: Type[T]
     create_schema: Type[T]
     update_schema: Type[T]
     _base_path: str = "/"
+    path_param_prefix: str
+    path_param_name: str
+    path_param_str: str
 
     def __init__(
         self,
@@ -29,6 +43,8 @@ class CRUDGenerator(Generic[T], APIRouter):
         update_route: Union[bool, DEPENDENCIES] = True,
         delete_one_route: Union[bool, DEPENDENCIES] = True,
         delete_all_route: Union[bool, DEPENDENCIES] = True,
+        path_param_prefix: str = "item",
+        path_param_id_name: str = "id",
         **kwargs: Any,
     ) -> None:
 
@@ -46,6 +62,10 @@ class CRUDGenerator(Generic[T], APIRouter):
             else schema_factory(self.schema, pk_field_name=self._pk, name="Update")
         )
 
+        self.path_param_prefix = path_param_prefix
+        self.path_param_id_name = path_param_id_name
+        self.path_param_id = override_path_param_id(self.path_param_prefix, self.path_param_id_name)
+        self.path_param_str = "{/" + self.path_param_id + "}"
         prefix = str(prefix if prefix else self.schema.__name__).lower()
         prefix = self._base_path + prefix.strip("/")
         tags = tags or [prefix.strip("/").capitalize()]
@@ -84,7 +104,8 @@ class CRUDGenerator(Generic[T], APIRouter):
 
         if get_one_route:
             self._add_api_route(
-                "/{item_id}",
+                self.path_param_str,
+                # "/{item_id}",
                 self._get_one(),
                 methods=["GET"],
                 response_model=self.schema,
@@ -94,7 +115,8 @@ class CRUDGenerator(Generic[T], APIRouter):
 
         if update_route:
             self._add_api_route(
-                "/{item_id}",
+                self.path_param_str,
+                # "/{item_id}",
                 self._update(),
                 methods=["PUT"],
                 response_model=self.schema,
@@ -104,7 +126,8 @@ class CRUDGenerator(Generic[T], APIRouter):
 
         if delete_one_route:
             self._add_api_route(
-                "/{item_id}",
+                self.path_param_str,
+                # "/{item_id}",
                 self._delete_one(),
                 methods=["DELETE"],
                 response_model=self.schema,
