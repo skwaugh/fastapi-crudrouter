@@ -3,6 +3,8 @@ from typing import Any, Callable, List, Type, cast, Coroutine, Optional, Union
 from . import CRUDGenerator, NOT_FOUND
 from ._types import DEPENDENCIES, PAGINATION, PYDANTIC_SCHEMA as SCHEMA
 
+from _base import override_path_param_id
+
 try:
     from tortoise.models import Model
 except ImportError:
@@ -32,6 +34,8 @@ class TortoiseCRUDRouter(CRUDGenerator[SCHEMA]):
         update_route: Union[bool, DEPENDENCIES] = True,
         delete_one_route: Union[bool, DEPENDENCIES] = True,
         delete_all_route: Union[bool, DEPENDENCIES] = True,
+        path_param_prefix: str = "item",
+        path_param_id_name: str = "id",
         **kwargs: Any
     ) -> None:
         assert (
@@ -54,6 +58,8 @@ class TortoiseCRUDRouter(CRUDGenerator[SCHEMA]):
             update_route=update_route,
             delete_one_route=delete_one_route,
             delete_all_route=delete_all_route,
+            path_param_prefix=path_param_prefix,
+            path_param_id_name=path_param_id_name,
             **kwargs
         )
 
