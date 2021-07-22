@@ -2,8 +2,7 @@ from typing import Any, Callable, List, Type, cast, Coroutine, Optional, Union
 
 from . import CRUDGenerator, NOT_FOUND
 from ._types import DEPENDENCIES, PAGINATION, PYDANTIC_SCHEMA as SCHEMA
-
-from _base import override_path_param_id
+from ._base import override_path_param_id
 
 try:
     from tortoise.models import Model
